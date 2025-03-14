@@ -50,20 +50,22 @@ You will need to edit your `claude_desktop_config.json` file. If it doesn't exis
   }
 }
 ```
-
+---
 #### Troubleshooting
 
-**ENOENT**
+> ENOENT
 
-[image]
+![screenshot_2025-03-14_12-12-30](https://github.com/user-attachments/assets/b8d6c4e8-9af5-4168-9f45-00939386a469)
 
 Try to use the full path of the command instead:
 - Run `which npx` or `which bunx` to get the path of the command
-- Replace `npx` or `bunx` with the full path
+- Replace `npx` or `bunx` in the configuration file with the full path
 
 Example: `/home/user/bin/bunx`
 
-**Disconnected**
+> Server disconnected
+
+![screenshot_2025-03-14_12-15-19](https://github.com/user-attachments/assets/24981bc1-5976-4bda-8a54-3f6ab53a4a5e)
 
 Double-check your API key otherwise look in your navigator if `https://token-api.service.pinax.network/sse` is reachable.
 
