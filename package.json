@@ -1,0 +1,36 @@
+{
+  "name": "pinax-mcp",
+  "description": "An MCP client for connecting to Pinax Token API MCP.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/pinax-network/pinax-mcp",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Etienne Donneger",
+      "email": "etienne@pinax.network",
+      "url": "https://github.com/0237h"
+    }
+  ],
+  "private": false,
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "start": "bun index.ts",
+    "build": "bun build --compile index.ts --outfile pinax-mcp",
+    "test": "bun test --coverage",
+    "clean": "bun i --force",
+    "lint": "bunx tsc --noEmit --skipLibCheck --pretty",
+    "inspector": "bunx @modelcontextprotocol/inspector"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "zod": "^3.24.2"
+  }
+}
