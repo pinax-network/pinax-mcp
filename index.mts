@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Based on implementation from https://github.com/supercorp-ai/supergateway
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -9,7 +11,11 @@ import { z } from "zod";
 import pkg from "./package.json" with { type: "json" };
 
 const AUTH_HEADER_NAME = "x-api-key";
-const AUTH_HEADER_VALUE = process.env.PINAX_API_KEY ?? process.argv.at(2) ?? "default";
+const AUTH_HEADER_VALUE = process.env.PINAX_API_KEY ?? process.argv.at(2);
+if (!AUTH_HEADER_VALUE) {
+    console.error("Missing PINAX_API_KEY environment variable or argument");
+    process.exit(1);
+}
 const SSE_URL = process.env.SSE_URL ?? process.argv.at(3) ?? "http://localhost:8080/sse";
 const VERSION = pkg.version;
 
@@ -17,7 +23,7 @@ const VERSION = pkg.version;
 // See https://modelcontextprotocol.io/docs/tools/debugging#server-side-logging
 const logger = { info: console.error };
 
-logger.info(`Connecting to remote SSE at ${SSE_URL}...`);
+logger.info(`Connecting to remote SSE at ${SSE_URL}`);
 
 process.on('SIGINT', () => {
     logger.info('Caught SIGINT. Exiting...');
@@ -92,30 +98,30 @@ stdioServer.transport!.onmessage = async (message: JSONRPCMessage) => {
     const isRequest = 'method' in message && 'id' in message;
     if (isRequest) {
         logger.info('Stdio → SSE:', message);
-        
+
         const req = message as JSONRPCRequest;
         let result;
-        
+
         try {
             result = await sseClient.request(req, z.any());
         } catch (err) {
             logger.info('Request error:', err);
-            
+
             const errorCode =
                 err && typeof err === 'object' && 'code' in err
                     ? (err as any).code
                     : -32000;
-            
+
             let errorMsg =
                 err && typeof err === 'object' && 'message' in err
                     ? (err as any).message
                     : 'Internal error';
-            
+
             const prefix = `MCP error ${errorCode}:`;
-            
+
             if (errorMsg.startsWith(prefix))
                 errorMsg = errorMsg.slice(prefix.length).trim();
-            
+
             const errorResp = wrapResponse(req, {
                 error: {
                     code: errorCode,
