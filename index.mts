@@ -9,15 +9,27 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { JSONRPCMessage, JSONRPCRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import pkg from "./package.json" with { type: "json" };
+import { Option, program } from "commander";
+import 'dotenv/config'
 
+// defaults
 const AUTH_HEADER_NAME = "x-api-key";
-const AUTH_HEADER_VALUE = process.env.PINAX_API_KEY ?? process.argv.at(2);
-if (!AUTH_HEADER_VALUE) {
-    console.error("Missing PINAX_API_KEY environment variable or argument");
-    process.exit(1);
-}
-const SSE_URL = process.env.SSE_URL ?? process.argv.at(3) ?? "http://localhost:8080/sse";
+const DEFAULT_SSE_URL = "https://token-api.service.pinax.network/sse";
 const VERSION = pkg.version;
+
+// CLI
+const opts = program
+  .name(pkg.name)
+  .version(VERSION)
+  .description(pkg.description)
+  .showHelpAfterError()
+  .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL").default(DEFAULT_SSE_URL))
+  .addOption(new Option("--api-key <string>", "Pinax API Key").env("PINAX_API_KEY"))
+  .parse()
+  .opts();
+
+const AUTH_HEADER_VALUE = opts.apiKey;
+const SSE_URL = opts.sseUrl;
 
 // Using console.error as logger since stdout is used for MCP communication
 // See https://modelcontextprotocol.io/docs/tools/debugging#server-side-logging
