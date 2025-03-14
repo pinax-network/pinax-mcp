@@ -5,6 +5,7 @@
   "version": "0.1.1",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
   "license": "Apache-2.0",
+  "keywords": ["mcp", "stdio", "sse", "ai", "llm", "blockchain"],
   "bin": {
     "pinax-mcp": "dist/index.mjs"
   },
