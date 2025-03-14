@@ -24,9 +24,9 @@ You will need to edit your `claude_desktop_config.json` file. If it doesn't exis
       "command": "npx",
       "args": [
         "@pinax/mcp",
-        "--api-key"
+        "--api-key",
         "<your-pinax-api-key>",
-        "--sse-url"
+        "--sse-url",
         "https://token-api.service.pinax.network/sse"
       ]
     }
