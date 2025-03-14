@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "dev": "bun --watch index.mts",
-    "prepublishOnly": "bunx tsx",
+    "prepublishOnly": "bunx tsc",
     "start": "bun index.mts",
     "build": "bun build --compile index.mts --outfile pinax-mcp",
     "test": "bun test --coverage",
