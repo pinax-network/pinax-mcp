@@ -17,16 +17,16 @@ You will need to edit your `claude_desktop_config.json` file. If it doesn't exis
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Linux: `.config/Claude/claude_desktop_config.json`
 
-#### npm
-
 ```json
 {
   "mcpServers": {
-    "pinax": {
+    "mcp-pinax": {
       "command": "npx",
       "args": [
-        "",
+        "@pinax/mcp",
+        "--api-key"
         "<your-pinax-api-key>",
+        "--sse-url"
         "https://token-api.service.pinax.network/sse"
       ]
     }
@@ -34,22 +34,6 @@ You will need to edit your `claude_desktop_config.json` file. If it doesn't exis
 }
 ```
 
-#### bun
-
-```json
-{
-  "mcpServers": {
-    "pinax": {
-      "command": "bunx",
-      "args": [
-        "",
-        "<your-pinax-api-key>",
-        "https://token-api.service.pinax.network/sse"
-      ]
-    }
-  }
-}
-```
 ---
 #### Troubleshooting
 

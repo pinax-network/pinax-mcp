@@ -8,7 +8,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { JSONRPCMessage, JSONRPCRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import pkg from "./package.json" with { type: "json" };
+import * as pkg from "./pkg.mjs";
 import { Option, program } from "commander";
 import 'dotenv/config'
 

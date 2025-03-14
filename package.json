@@ -2,7 +2,7 @@
   "name": "@pinax/mcp",
   "description": "An MCP client for connecting to Pinax Token API MCP.",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
   "license": "Apache-2.0",
   "bin": {
