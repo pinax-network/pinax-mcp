@@ -2,6 +2,19 @@
 
 > An MCP client for connecting to Pinax Token API MCP.
 
+```console
+Usage: pinax-mcp [options]
+
+An MCP client for connecting to Pinax Token API MCP.
+
+Options:
+  -V, --version            output the version number
+  --sse-url <string>       SSE URL (default: "https://token-api.service.pinax.network/sse", env: SSE_URL)
+  --api-key <string>       Pinax API Key (env: PINAX_API_KEY)
+  -v, --verbose <boolean>  Enable verbose logging (choices: "true", "false", default: false, env: VERBOSE)
+  -h, --help               display help for command
+```
+
 ## Configuration
 
 You will need [`npx`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [`bunx`](https://bun.sh/) installed and available in your path.
@@ -36,6 +49,8 @@ You will need to edit your `claude_desktop_config.json` file. If it doesn't exis
 
 ---
 #### Troubleshooting
+
+To enable logs for the MCP, use the `--verbose true` option.
 
 > ENOENT
 
