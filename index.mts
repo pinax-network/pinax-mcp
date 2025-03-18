@@ -10,26 +10,26 @@ import type { JSONRPCMessage, JSONRPCRequest } from "@modelcontextprotocol/sdk/t
 import { z } from "zod";
 import * as pkg from "./pkg.mjs";
 import { Option, program } from "commander";
-import 'dotenv/config'
+import 'dotenv/config';
 
 // defaults
-const AUTH_HEADER_NAME = "x-api-key";
+const AUTH_HEADER_NAME = "Authorization";
 const DEFAULT_SSE_URL = "https://token-api.service.pinax.network/sse";
 const VERSION = pkg.version;
 
 // CLI
 const opts = program
-  .name(pkg.name)
-  .version(VERSION)
-  .description(pkg.description)
-  .showHelpAfterError()
-  .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL").default(DEFAULT_SSE_URL))
-  .addOption(new Option("--api-key <string>", "Pinax API Key").env("PINAX_API_KEY"))
-  .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
-  .parse()
-  .opts();
+    .name(pkg.name)
+    .version(VERSION)
+    .description(pkg.description)
+    .showHelpAfterError()
+    .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL").default(DEFAULT_SSE_URL))
+    .addOption(new Option("--auth-token <string>", "JWT token").env("PINAX_AUTH_TOKEN"))
+    .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
+    .parse()
+    .opts();
 
-const AUTH_HEADER_VALUE = opts.apiKey;
+const AUTH_HEADER_VALUE = `Bearer ${opts.authToken}`;
 const SSE_URL = opts.sseUrl;
 
 // Using console.error as logger since stdout is used for MCP communication
