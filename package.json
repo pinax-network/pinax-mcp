@@ -1,8 +1,8 @@
 {
   "name": "@pinax/mcp",
-  "description": "An MCP client for connecting to Pinax Token API MCP.",
+  "description": "An MCP client for connecting to https://thegraph.market MCP API services.",
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
   "license": "Apache-2.0",
   "keywords": ["mcp", "stdio", "sse", "ai", "llm", "blockchain"],
