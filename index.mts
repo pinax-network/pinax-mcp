@@ -14,7 +14,6 @@ import 'dotenv/config';
 
 // defaults
 const AUTH_HEADER_NAME = "Authorization";
-const DEFAULT_SSE_URL = "https://token-api.service.pinax.network/sse";
 const VERSION = pkg.version;
 
 // CLI
@@ -23,14 +22,39 @@ const opts = program
     .version(VERSION)
     .description(pkg.description)
     .showHelpAfterError()
-    .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL").default(DEFAULT_SSE_URL))
+    .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL"))
     .addOption(new Option("--access-token <string>", "https://thegraph.market JWT Access Token").env("ACCESS_TOKEN"))
     .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
     .parse()
     .opts();
 
-const AUTH_HEADER_VALUE = `Bearer ${opts.accessToken}`;
+const ACCESS_TOKEN = opts.accessToken;
 const SSE_URL = opts.sseUrl;
+const AUTH_HEADER_VALUE = `Bearer ${ACCESS_TOKEN}`;
+
+// CLI or .env validation
+if (!ACCESS_TOKEN) {
+    console.error("Error: Missing required ACCESS_TOKEN .env variable or --access-token option");
+    process.exit(1);
+} else {
+    const jwtSchema = z.string().regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+    const result = jwtSchema.safeParse(ACCESS_TOKEN);
+    if (!result.success) {
+        console.error("Error: Invalid ACCESS_TOKEN .env variable or --access-token option");
+        process.exit(1);
+    }
+}
+
+if (!SSE_URL) {
+    console.error("Error: Missing required SSE_URL .env variable or --sse-url option");
+    process.exit(1);
+} else {
+    const result = z.string().url().safeParse(SSE_URL);
+    if (!result.success) {
+        console.error("Error: Invalid SSE_URL .env variable or --sse-url option");
+        process.exit(1);
+    }
+}
 
 // Using console.error as logger since stdout is used for MCP communication
 // See https://modelcontextprotocol.io/docs/tools/debugging#server-side-logging
