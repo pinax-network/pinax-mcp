@@ -4,8 +4,6 @@
 
 > An MCP client for connecting to https://thegraph.market MCP API services
 
-Create API Key & get your JWT Access Token at https://thegraph.market
-
 ```console
 Usage: pinax-mcp [options]
 
@@ -16,6 +14,15 @@ Options:
   -v, --verbose <boolean>  Enable verbose logging (choices: "true", "false", default: false, env: VERBOSE)
   -h, --help               display help for command
 ```
+
+## Authentication
+
+1. Create a free account at https://thegraph.market using your GitHub credentials as login.
+2. Go to **Dashboard**
+3. **Create New Key**
+4. **Generate Access Token** to retrieve your auth token
+
+<img width="896" alt="Image" src="https://github.com/user-attachments/assets/43c0e662-5e30-4b7d-87a0-884d6105b6a3" />
 
 ## Supported by AI Agents
 
