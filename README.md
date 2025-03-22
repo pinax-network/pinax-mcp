@@ -2,7 +2,7 @@
 
 ![license](https://img.shields.io/github/license/pinax-network/pinax-mcp)
 
-> An MCP client for connecting to https://thegraph.market MCP API services
+> An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.
 
 ```console
 Usage: pinax-mcp [options]
