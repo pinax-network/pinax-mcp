@@ -101,7 +101,7 @@ const sseTransport = new SSEClientTransport(new URL(SSE_URL), {
 });
 
 const sseClient = new Client(
-    { name: 'Pinax MCP SSE Client', version: VERSION },
+    { name: 'MCP SSE Client', version: VERSION },
     { capabilities: {} }
 );
 
@@ -118,7 +118,7 @@ await sseClient.connect(sseTransport);
 logger.info('SSE successfully connected !');
 
 const stdioServer = new Server(
-    sseClient.getServerVersion() ?? { name: 'Pinax MCP Stdio Server', version: VERSION },
+    sseClient.getServerVersion() ?? { name: 'MCP Stdio Server', version: VERSION },
     { capabilities: sseClient.getServerCapabilities() }
 );
 
