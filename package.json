@@ -20,6 +20,13 @@
       "url": "https://github.com/0237h"
     }
   ],
+  "contributors": [
+    {
+      "name": "Denis Carriere",
+      "email": "denis@pinax.network",
+      "url": "https://github.com/DenisCarriere"
+    }
+  ],
   "scripts": {
     "dev": "bun --watch index.mts",
     "prepublishOnly": "bunx tsc",

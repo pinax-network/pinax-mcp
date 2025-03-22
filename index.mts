@@ -24,12 +24,12 @@ const opts = program
     .description(pkg.description)
     .showHelpAfterError()
     .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL").default(DEFAULT_SSE_URL))
-    .addOption(new Option("--auth-token <string>", "https://thegraph.market JWT Access Token").env("AUTH_TOKEN"))
+    .addOption(new Option("--access-token <string>", "https://thegraph.market JWT Access Token").env("ACCESS_TOKEN"))
     .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
     .parse()
     .opts();
 
-const AUTH_HEADER_VALUE = `Bearer ${opts.authToken}`;
+const AUTH_HEADER_VALUE = `Bearer ${opts.accessToken}`;
 const SSE_URL = opts.sseUrl;
 
 // Using console.error as logger since stdout is used for MCP communication
