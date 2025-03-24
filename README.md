@@ -1,11 +1,11 @@
-# The Graph: `@pinax/mcp`
+# MCP Client: `@pinax/mcp`
 
 ![license](https://img.shields.io/github/license/pinax-network/pinax-mcp)
 
 > An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.
 
 ```console
-Usage: pinax-mcp [options]
+Usage: @pinax/mcp [options]
 
 Options:
   -V, --version            output the version number

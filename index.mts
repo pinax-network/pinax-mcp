@@ -22,8 +22,8 @@ const opts = program
     .version(VERSION)
     .description(pkg.description)
     .showHelpAfterError()
-    .addOption(new Option("--sse-url <string>", "SSE URL").env("SSE_URL"))
-    .addOption(new Option("--access-token <string>", "https://thegraph.market JWT Access Token").env("ACCESS_TOKEN"))
+    .addOption(new Option("--sse-url <string>", "Server-Sent Events (SSE) url").env("SSE_URL"))
+    .addOption(new Option("--access-token <string>", "JWT Access Token from https://thegraph.market").env("ACCESS_TOKEN"))
     .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
     .parse()
     .opts();
