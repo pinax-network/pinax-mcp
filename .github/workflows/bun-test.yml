@@ -1,0 +1,22 @@
+name: Test
+
+on: push
+
+jobs:
+    bun-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: "Install Dependencies"
+              run: bun install
+
+            - name: "Run lint"
+              run: bun lint
+
+            - name: "Run test"
+              run: bun test

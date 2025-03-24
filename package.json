@@ -2,16 +2,16 @@
   "name": "@pinax/mcp",
   "description": "An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.",
   "type": "module",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "homepage": "https://github.com/pinax/pinax-mcp",
   "license": "Apache-2.0",
   "keywords": ["mcp", "stdio", "sse", "ai", "llm", "blockchain"],
   "bin": {
-    "pinax-mcp": "dist/index.mjs"
+    "pinax-mcp": "dist/index.js"
   },
   "files": [
     "dist",
-    "index.mts"
+    "index.ts"
   ],
   "authors": [
     {
@@ -28,10 +28,9 @@
     }
   ],
   "scripts": {
-    "dev": "bun --watch index.mts",
-    "prepublishOnly": "bunx tsc",
-    "start": "bun index.mts",
-    "build": "bun build --compile index.mts --outfile pinax-mcp",
+    "dev": "bun --watch index.ts",
+    "prepublishOnly": "bun build ./index.ts --outdir ./dist --target=node",
+    "start": "bun index.ts",
     "test": "bun test --coverage",
     "clean": "bun i --force",
     "lint": "bunx tsc --noEmit --skipLibCheck --pretty",
@@ -48,5 +47,7 @@
     "commander": "^13.1.0",
     "dotenv": "^16.4.7",
     "zod": "^3.24.2"
-  }
+  },
+  "module": "index.ts",
+  "private": true
 }

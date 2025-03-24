@@ -8,7 +8,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { JSONRPCMessage, JSONRPCRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import * as pkg from "./pkg.mjs";
+import * as pkg from "./package.json";
 import { Option, program } from "commander";
 import 'dotenv/config';
 
@@ -83,7 +83,7 @@ process.stdin.on('close', () => {
 });
 
 const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
-    const headers = new Headers(init?.headers);
+    const headers = new Headers(init?.headers as Bun.HeadersInit);
     headers.set(AUTH_HEADER_NAME, AUTH_HEADER_VALUE);
 
     return fetch(url.toString(), { ...init, headers });
