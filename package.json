@@ -48,6 +48,5 @@
     "dotenv": "^16.4.7",
     "zod": "^3.24.2"
   },
-  "module": "index.ts",
-  "private": true
+  "module": "index.ts"
 }
