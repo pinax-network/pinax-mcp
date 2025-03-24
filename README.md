@@ -7,10 +7,12 @@
 ```console
 Usage: @pinax/mcp [options]
 
+An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.
+
 Options:
   -V, --version            output the version number
-  --sse-url <string>       SSE URL (default: "https://token-api.service.pinax.network/sse", env: SSE_URL)
-  --access-token <string>    https://thegraph.market JWT Access Token (env: ACCESS_TOKEN)
+  --sse-url <string>       Server-Sent Events (SSE) url (env: SSE_URL)
+  --access-token <string>  JWT Access Token from https://thegraph.market (env: ACCESS_TOKEN)
   -v, --verbose <boolean>  Enable verbose logging (choices: "true", "false", default: false, env: VERBOSE)
   -h, --help               display help for command
 ```
