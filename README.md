@@ -28,7 +28,7 @@ Options:
 
 ```env
 ACCESS_TOKEN=<https://thegraph.market JWT Access Token>
-SSE_URL=https://token-api.service.pinax.network/sse
+SSE_URL=https://token-api.mcp.thegraph.com/sse
 ```
 
 <img width="896" alt="Image" src="https://github.com/user-attachments/assets/43c0e662-5e30-4b7d-87a0-884d6105b6a3" />
