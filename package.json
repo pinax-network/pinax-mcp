@@ -1,6 +1,7 @@
 {
   "name": "@graphprotocol/mcp",
   "description": "An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.",
+  "private": "false",
   "type": "module",
   "version": "0.1.6",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
