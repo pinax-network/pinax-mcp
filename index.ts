@@ -1,186 +1,198 @@
 #!/usr/bin/env node
 
-// Based on implementation from https://github.com/supercorp-ai/supergateway
-
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import type { JSONRPCMessage, JSONRPCRequest } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
-import * as pkg from "./package.json";
+import type {
+	JSONRPCMessage,
+	JSONRPCRequest,
+} from "@modelcontextprotocol/sdk/types.js";
 import { Option, program } from "commander";
-import 'dotenv/config';
+import "dotenv/config";
+import * as pkg from "./package.json";
+import { z } from "zod";
 
-// defaults
+// Configuration
 const AUTH_HEADER_NAME = "Authorization";
 const VERSION = pkg.version;
 
 // CLI
 const opts = program
-    .name(pkg.name)
-    .version(VERSION)
-    .description(pkg.description)
-    .showHelpAfterError()
-    .addOption(new Option("--sse-url <string>", "Server-Sent Events (SSE) url").env("SSE_URL"))
-    .addOption(new Option("--access-token <string>", "JWT Access Token from https://thegraph.market").env("ACCESS_TOKEN"))
-    .addOption(new Option("-v, --verbose <boolean>", "Enable verbose logging").choices(["true", "false"]).env("VERBOSE").default(false))
-    .parse()
-    .opts();
+	.name(pkg.name)
+	.version(VERSION)
+	.description(pkg.description)
+	.showHelpAfterError()
+	.addOption(
+		new Option("--remote-url <string>", "Remote MCP server url").env(
+			"REMOTE_URL",
+		),
+	)
+	.addOption(
+		new Option("--sse-url <string>", "[DEPRECATED] Use --remote-url instead")
+			.env("SSE_URL")
+			.hideHelp(),
+	)
+	.addOption(
+		new Option("--access-token <string>", "JWT Access Token").env(
+			"ACCESS_TOKEN",
+		),
+	)
+	.addOption(
+		new Option("-v, --verbose <boolean>", "Enable verbose logging")
+			.choices(["true", "false"])
+			.env("VERBOSE")
+			.default(false),
+	)
+	.parse()
+	.opts();
 
 const ACCESS_TOKEN = opts.accessToken;
-const SSE_URL = opts.sseUrl;
+const REMOTE_URL = opts.remoteUrl || opts.sseUrl;
 const AUTH_HEADER_VALUE = `Bearer ${ACCESS_TOKEN}`;
 
-// CLI or .env validation
+// Show deprecation warning
+if (opts.sseUrl && !opts.remoteUrl) {
+	console.error(
+		"Warning: --sse-url is deprecated. Please use --remote-url instead.",
+	);
+}
+
+// Validation
+if (!REMOTE_URL) {
+	console.error(
+		"Error: Missing required REMOTE_URL .env variable or --remote-url option",
+	);
+	process.exit(1);
+}
+
 if (!ACCESS_TOKEN) {
-    console.error("Error: Missing required ACCESS_TOKEN .env variable or --access-token option");
-    process.exit(1);
-} else {
-    const jwtSchema = z.string().regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
-    const result = jwtSchema.safeParse(ACCESS_TOKEN);
-    if (!result.success) {
-        console.error("Error: Invalid ACCESS_TOKEN .env variable or --access-token option");
-        process.exit(1);
-    }
+	console.error(
+		"Error: Missing required ACCESS_TOKEN .env variable or --access-token option",
+	);
+	process.exit(1);
 }
 
-if (!SSE_URL) {
-    console.error("Error: Missing required SSE_URL .env variable or --sse-url option");
-    process.exit(1);
-} else {
-    const result = z.string().url().safeParse(SSE_URL);
-    if (!result.success) {
-        console.error("Error: Invalid SSE_URL .env variable or --sse-url option");
-        process.exit(1);
-    }
-}
+// Auto-detect transport type based on URL ending
+const detectTransportType = (url: string): "sse" | "streamable-http" => {
+	if (url.endsWith("/sse")) {
+		return "sse";
+	} else {
+		// Default to Streamable HTTP
+		return "streamable-http";
+	}
+};
 
-// Using console.error as logger since stdout is used for MCP communication
-// See https://modelcontextprotocol.io/docs/tools/debugging#server-side-logging
+const transportType = detectTransportType(REMOTE_URL);
+
+// Logger (stderr for logging, stdout for MCP protocol)
 const logger = { info: opts.verbose ? console.error : () => {} };
 
-logger.info(`Connecting to remote SSE at ${SSE_URL}`);
+// Signal handlers
+process.on("SIGINT", () => process.exit(0));
+process.on("SIGTERM", () => process.exit(0));
+process.on("SIGHUP", () => process.exit(0));
+process.stdin.on("close", () => process.exit(0));
 
-process.on('SIGINT', () => {
-    logger.info('Caught SIGINT. Exiting...');
-    process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-    logger.info('Caught SIGTERM. Exiting...');
-    process.exit(0);
-});
-
-process.on('SIGHUP', () => {
-    logger.info('Caught SIGHUP. Exiting...');
-    process.exit(0);
-});
-
-process.stdin.on('close', () => {
-    logger.info('stdin closed. Exiting...');
-    process.exit(0);
-});
-
+// Auth helper
 const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
-    const headers = new Headers(init?.headers as Bun.HeadersInit);
-    headers.set(AUTH_HEADER_NAME, AUTH_HEADER_VALUE);
-
-    return fetch(url.toString(), { ...init, headers });
+	const headers = new Headers(init?.headers);
+	headers.set(AUTH_HEADER_NAME, AUTH_HEADER_VALUE);
+	return fetch(url.toString(), { ...init, headers });
 };
 
-const sseTransport = new SSEClientTransport(new URL(SSE_URL), {
-    // Adds auth header to initial connect (e.g. `/sse`)
-    eventSourceInit: {
-        fetch: fetchWithAuth,
-    },
-    // Adds auth header to all subsequent messages (e.g. `/messages`)
-    requestInit: {
-        headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE },
-    }
-});
-
-const sseClient = new Client(
-    { name: 'MCP SSE Client', version: VERSION },
-    { capabilities: {} }
-);
-
-sseTransport.onerror = err => {
-    logger.info('SSE error:', err);
+// Create transport based on detected type
+const createTransport = () => {
+	if (transportType === "streamable-http") {
+		logger.info("Using Streamable HTTP transport");
+		return new StreamableHTTPClientTransport(new URL(REMOTE_URL), {
+			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
+			fetch: fetchWithAuth,
+		});
+	} else {
+		logger.info("Using SSE transport");
+		return new SSEClientTransport(new URL(REMOTE_URL), {
+			eventSourceInit: { fetch: fetchWithAuth },
+			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
+		});
+	}
 };
 
-sseTransport.onclose = () => {
-    logger.info('SSE connection closed');
-    process.exit(1);
-};
+// Main
+(async () => {
+	logger.info(`Setting up transports...`);
+	const stdioTransport = new StdioServerTransport();
 
-await sseClient.connect(sseTransport);
-logger.info('SSE successfully connected !');
+	const remoteTransport = createTransport();
+	const remoteClient = new Client(
+		{ name: "MCP Remote Client", version: VERSION },
+		{ capabilities: {} },
+	);
 
-const stdioServer = new Server(
-    sseClient.getServerVersion() ?? { name: 'MCP Stdio Server', version: VERSION },
-    { capabilities: sseClient.getServerCapabilities() }
-);
+	const originalOnMessage = remoteTransport.onmessage;
+	remoteTransport.onmessage = async (message: JSONRPCMessage) => {
+		// Check if it's a notification (has method but no id)
+		if ("method" in message && !("id" in message)) {
+			logger.info("Remote → Stdio (notification):", message);
+			// Forward notification to stdio
+			await stdioTransport.send(message);
+		}
 
-const stdioTransport = new StdioServerTransport();
-await stdioServer.connect(stdioTransport);
+		// Also let the Client handle it (for responses to our requests)
+		if (originalOnMessage) {
+			originalOnMessage(message);
+		}
+	};
 
-const wrapResponse = (req: JSONRPCRequest, payload: object) => ({
-    jsonrpc: req.jsonrpc || '2.0',
-    id: req.id,
-    ...payload,
-});
+	remoteTransport.onerror = (err) =>
+		logger.info(`${transportType} error:`, err);
+	remoteTransport.onclose = () => {
+		logger.info(`${transportType} connection closed`);
+		process.exit(1);
+	};
 
-stdioServer.transport!.onmessage = async (message: JSONRPCMessage) => {
-    const isRequest = 'method' in message && 'id' in message;
-    if (isRequest) {
-        logger.info('Stdio → SSE:', message);
+	stdioTransport.onmessage = async (message) => {
+		logger.info("Stdio message:", message);
+		const isRequest = "method" in message && "id" in message;
 
-        const req = message as JSONRPCRequest;
-        let result;
+		if (isRequest) {
+			const request = message as JSONRPCRequest;
+			logger.info("Stdio → Remote (request):", request);
 
-        try {
-            result = await sseClient.request(req, z.any());
-        } catch (err) {
-            logger.info('Request error:', err);
+			try {
+				// Forward the request to remote server and get response
+				const result = await remoteClient.request(request, z.any());
 
-            const errorCode =
-                err && typeof err === 'object' && 'code' in err
-                    ? (err as any).code
-                    : -32000;
+				// Build response message
+				const response: JSONRPCMessage = {
+					jsonrpc: "2.0" as const,
+					id: request.id,
+					result,
+				};
 
-            let errorMsg =
-                err && typeof err === 'object' && 'message' in err
-                    ? (err as any).message
-                    : 'Internal error';
+				logger.info("Remote → Stdio (response):", response);
+				await stdioTransport.send(response);
+			} catch (err: any) {
+				logger.info("Request error:", err);
 
-            const prefix = `MCP error ${errorCode}:`;
+				// Build error response
+				const errorResponse: JSONRPCMessage = {
+					jsonrpc: "2.0" as const,
+					id: request.id,
+					error: {
+						code: typeof err?.code === "number" ? err.code : -32000,
+						message: err?.message ?? "Internal error",
+					},
+				};
 
-            if (errorMsg.startsWith(prefix))
-                errorMsg = errorMsg.slice(prefix.length).trim();
+				await stdioTransport.send(errorResponse);
+			}
+		}
+	};
 
-            const errorResp = wrapResponse(req, {
-                error: {
-                    code: errorCode,
-                    message: errorMsg,
-                },
-            });
-
-            process.stdout.write(JSON.stringify(errorResp) + '\n');
-            return;
-        }
-
-        const response = wrapResponse(
-            req,
-            result.hasOwnProperty('error')
-                ? { error: { ...result.error } }
-                : { result: { ...result } }
-        );
-
-        logger.info('Response:', response);
-        process.stdout.write(JSON.stringify(response) + '\n');
-    } else {
-        logger.info('SSE → Stdio:', message);
-        process.stdout.write(JSON.stringify(message) + '\n');
-    }
-};
+	logger.info(`Connecting to remote ${transportType} at ${REMOTE_URL}`);
+	await remoteClient.connect(remoteTransport);
+	await stdioTransport.start();
+	logger.info(`${transportType} successfully connected!`);
+	logger.info(`Bridge running: Stdio ↔ ${transportType}`);
+})();
