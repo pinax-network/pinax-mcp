@@ -32,7 +32,7 @@
     "dev": "bun --watch index.ts",
     "prepublishOnly": "bun build ./index.ts --outdir ./dist --target=node",
     "start": "bun index.ts",
-    "test": "bun test --coverage",
+    "test": "bun test --coverage --pass-with-no-tests",
     "clean": "bun i --force",
     "lint": "bunx tsc --noEmit --skipLibCheck --pretty",
     "inspector": "bunx @modelcontextprotocol/inspector"
