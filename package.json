@@ -3,7 +3,7 @@
   "description": "An MCP Client for connecting to MCP Server‐compatible services at https://thegraph.market.",
   "private": "false",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
   "license": "Apache-2.0",
   "keywords": ["mcp", "stdio", "sse", "ai", "llm", "blockchain"],
