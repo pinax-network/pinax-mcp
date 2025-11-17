@@ -39,14 +39,6 @@ const opts = program
 		),
 	)
 	.addOption(
-		new Option(
-			"--rest",
-			"Use streamable-http transport instead of SSE (default: false)",
-		)
-			.env("REST")
-			.default(false),
-	)
-	.addOption(
 		new Option("-v, --verbose <boolean>", "Enable verbose logging")
 			.choices(["true", "false"])
 			.env("VERBOSE")
@@ -57,7 +49,6 @@ const opts = program
 
 const ACCESS_TOKEN = opts.accessToken;
 const REMOTE_URL = opts.remoteUrl || opts.sseUrl;
-const USE_REST = opts.rest;
 const AUTH_HEADER_VALUE = `Bearer ${ACCESS_TOKEN}`;
 
 // Show deprecation warning
@@ -82,9 +73,20 @@ if (!ACCESS_TOKEN) {
 	process.exit(1);
 }
 
+// Auto-detect transport type based on URL ending
+const detectTransportType = (url: string): "sse" | "streamable-http" => {
+	if (url.endsWith("/sse")) {
+		return "sse";
+	} else {
+		// Default to Streamable HTTP
+		return "streamable-http";
+	}
+};
+
+const transportType = detectTransportType(REMOTE_URL);
+
 // Logger (stderr for logging, stdout for MCP protocol)
 const logger = { info: opts.verbose ? console.error : () => {} };
-const transportType = USE_REST ? "streamable-http" : "SSE";
 
 // Signal handlers
 process.on("SIGINT", () => process.exit(0));
@@ -99,14 +101,16 @@ const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
 	return fetch(url.toString(), { ...init, headers });
 };
 
-// Create transport based on type
+// Create transport based on detected type
 const createTransport = () => {
-	if (USE_REST) {
+	if (transportType === "streamable-http") {
+		logger.info("Using Streamable HTTP transport");
 		return new StreamableHTTPClientTransport(new URL(REMOTE_URL), {
 			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
 			fetch: fetchWithAuth,
 		});
 	} else {
+		logger.info("Using SSE transport");
 		return new SSEClientTransport(new URL(REMOTE_URL), {
 			eventSourceInit: { fetch: fetchWithAuth },
 			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
