@@ -16,6 +16,7 @@ import { z } from "zod";
 // Configuration
 const AUTH_HEADER_NAME = "Authorization";
 const VERSION = pkg.version;
+const USER_AGENT_STRING = `pinax-mcp/${VERSION}`
 
 // CLI
 const opts = program
@@ -98,6 +99,7 @@ process.stdin.on("close", () => process.exit(0));
 const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
 	const headers = new Headers(init?.headers);
 	headers.set(AUTH_HEADER_NAME, AUTH_HEADER_VALUE);
+	headers.set('User-Agent', USER_AGENT_STRING);
 	return fetch(url.toString(), { ...init, headers });
 };
 
