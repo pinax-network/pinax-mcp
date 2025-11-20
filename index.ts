@@ -76,7 +76,7 @@ if (!ACCESS_TOKEN) {
 
 // Auto-detect transport type based on URL ending
 const detectTransportType = (url: string): "sse" | "streamable-http" => {
-	if (url.endsWith("/sse")) {
+	if (url.endsWith("/sse") || url.endsWith("/sql")) {
 		return "sse";
 	} else {
 		// Default to Streamable HTTP
