@@ -1,7 +1,6 @@
 {
   "name": "@pinax/mcp",
   "description": "An MCP Client for connecting to MCP Server‐compatible services at https://app.pinax.network.",
-  "private": "false",
   "type": "module",
   "version": "0.3.0",
   "homepage": "https://github.com/pinax-network/pinax-mcp",
@@ -13,7 +12,13 @@
     "url": "https://github.com/pinax-network/pinax-mcp/issues"
   },
   "license": "Apache-2.0",
-  "keywords": ["mcp", "stdio", "ai", "llm", "blockchain"],
+  "keywords": [
+    "mcp",
+    "stdio",
+    "ai",
+    "llm",
+    "blockchain"
+  ],
   "bin": {
     "pinax-mcp": "dist/index.js"
   },
