@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type {
@@ -30,11 +29,6 @@ const opts = program
 		),
 	)
 	.addOption(
-		new Option("--sse-url <string>", "[DEPRECATED] Use --remote-url instead")
-			.env("SSE_URL")
-			.hideHelp(),
-	)
-	.addOption(
 		new Option("--access-token <string>", "JWT Access Token").env(
 			"ACCESS_TOKEN",
 		),
@@ -49,15 +43,8 @@ const opts = program
 	.opts();
 
 const ACCESS_TOKEN = opts.accessToken;
-const REMOTE_URL = opts.remoteUrl || opts.sseUrl;
+const REMOTE_URL = opts.remoteUrl;
 const AUTH_HEADER_VALUE = `Bearer ${ACCESS_TOKEN}`;
-
-// Show deprecation warning
-if (opts.sseUrl && !opts.remoteUrl) {
-	console.error(
-		"Warning: --sse-url is deprecated. Please use --remote-url instead.",
-	);
-}
 
 // Validation
 if (!REMOTE_URL) {
@@ -73,18 +60,6 @@ if (!ACCESS_TOKEN) {
 	);
 	process.exit(1);
 }
-
-// Auto-detect transport type based on URL ending
-const detectTransportType = (url: string): "sse" | "streamable-http" => {
-	if (url.endsWith("/sse") || url.endsWith("/sql")) {
-		return "sse";
-	} else {
-		// Default to Streamable HTTP
-		return "streamable-http";
-	}
-};
-
-const transportType = detectTransportType(REMOTE_URL);
 
 // Logger (stderr for logging, stdout for MCP protocol)
 const logger = { info: opts.verbose ? console.error : () => {} };
@@ -103,21 +78,13 @@ const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
 	return fetch(url.toString(), { ...init, headers });
 };
 
-// Create transport based on detected type
+// Create Streamable HTTP transport
 const createTransport = () => {
-	if (transportType === "streamable-http") {
-		logger.info("Using Streamable HTTP transport");
-		return new StreamableHTTPClientTransport(new URL(REMOTE_URL), {
-			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
-			fetch: fetchWithAuth,
-		});
-	} else {
-		logger.info("Using SSE transport");
-		return new SSEClientTransport(new URL(REMOTE_URL), {
-			eventSourceInit: { fetch: fetchWithAuth },
-			requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
-		});
-	}
+	logger.info("Using Streamable HTTP transport");
+	return new StreamableHTTPClientTransport(new URL(REMOTE_URL), {
+		requestInit: { headers: { [AUTH_HEADER_NAME]: AUTH_HEADER_VALUE } },
+		fetch: fetchWithAuth,
+	});
 };
 
 // Main
@@ -146,10 +113,9 @@ const createTransport = () => {
 		}
 	};
 
-	remoteTransport.onerror = (err) =>
-		logger.info(`${transportType} error:`, err);
+	remoteTransport.onerror = (err) => logger.info("Transport error:", err);
 	remoteTransport.onclose = () => {
-		logger.info(`${transportType} connection closed`);
+		logger.info("Transport connection closed");
 		process.exit(1);
 	};
 
@@ -192,9 +158,9 @@ const createTransport = () => {
 		}
 	};
 
-	logger.info(`Connecting to remote ${transportType} at ${REMOTE_URL}`);
+	logger.info(`Connecting to remote MCP server at ${REMOTE_URL}`);
 	await remoteClient.connect(remoteTransport);
 	await stdioTransport.start();
-	logger.info(`${transportType} successfully connected!`);
-	logger.info(`Bridge running: Stdio ↔ ${transportType}`);
+	logger.info("Remote MCP server successfully connected!");
+	logger.info("Bridge running: Stdio ↔ Streamable HTTP");
 })();
