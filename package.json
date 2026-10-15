@@ -45,12 +45,13 @@
     "prepublishOnly": "bun build ./index.ts --outdir ./dist --target=node",
     "start": "bun index.ts",
     "test": "bun test --coverage --pass-with-no-tests",
-    "clean": "bun i --force",
-    "lint": "bunx tsc --noEmit --skipLibCheck --pretty",
-    "inspector": "bunx @modelcontextprotocol/inspector"
+    "clean": "rm -rf node_modules && bun install --frozen-lockfile",
+    "lint": "tsc --noEmit --skipLibCheck --pretty",
+    "inspector": "mcp-inspector"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@modelcontextprotocol/inspector": "2.10.1",
+    "@types/bun": "1.3.2"
   },
   "peerDependencies": {
     "typescript": "^5.8.2"
@@ -61,5 +62,15 @@
     "dotenv": "^16.6.1",
     "zod": "^3.25.76"
   },
-  "module": "index.ts"
+  "module": "index.ts",
+  "packageManager": "bun@1.4.3",
+  "engines": {
+    "bun": ">=1.4.3"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "bun",
+      "onFail": "error"
+    }
+  }
 }

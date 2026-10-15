@@ -14,9 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
+      - run: bun install --frozen-lockfile
       - run: bun test --pass-with-no-tests
 
   publish-bun:
@@ -25,9 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install
+      - run: bun install --frozen-lockfile
       - run: bun publish --tolerate-republish
         env:
           NPM_CONFIG_TOKEN: ${{secrets.npm_token}}
