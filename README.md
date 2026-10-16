@@ -146,8 +146,6 @@ npx @pinax/mcp --remote-url https://example.com/mcp --access-token YOUR_TOKEN -v
 ### Install Dependencies
 
 ```bash
-npm install
-# or
 bun install
 ```
 
@@ -160,9 +158,7 @@ bun run index.ts --remote-url http://localhost:8080/mcp --access-token YOUR_TOKE
 ### Build
 
 ```bash
-npm run build
-# or
-bun run build
+bun build ./index.ts --outdir ./dist --target=node
 ```
 
 ## Architecture
